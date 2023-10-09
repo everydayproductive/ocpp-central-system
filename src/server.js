@@ -10,12 +10,24 @@ import { sendCommandToCharger } from './sendCommandToCharger.js'
 const acceptedChargePointIds = ['prompt', 'cp-1']
 let ocppSocket
 
+function onSocketError(err) {
+  console.error(err)
+}
+
 const app = express()
 const server = http.createServer(app)
 const wss = new WebSocketServer({ noServer: true })
 
 server.on('upgrade', (request, socket, head) => {
+  socket.on('error', onSocketError)
   console.log('received connection on:', request.url)
+  const auth = request.headers.authorization
+  console.log('authorization=', auth)
+  // if (auth !== `Basic QWxhZGRpbjpvcGVuJTIwc2VzYW1l`) {
+  //   socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
+  //   socket.destroy()
+  //   return
+  // }
   const chargePointId = request.url?.slice(1)
   console.log('chargePointId:', chargePointId)
 
@@ -46,6 +58,7 @@ wss.on('headers', (headers, req) => {
 
 wss.on('connection', function connection(ws) {
   const protocol = ws.protocol
+  ws.on('error', console.error)
   if (protocol === 'ocpp1.6') {
     ocppSocket = ws
     ws.on('message', (data) => {
