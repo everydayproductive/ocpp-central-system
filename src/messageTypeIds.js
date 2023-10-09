@@ -1,0 +1,5 @@
+const CALL = 2
+const CALLRESULT = 3
+const CALLERROR = 4
+
+export { CALL, CALLRESULT, CALLERROR }
